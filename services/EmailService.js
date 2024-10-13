@@ -1,15 +1,14 @@
 const nodemailer = require('nodemailer');
-const dotenv = require('dotenv');
+require('dotenv');
 const fs = require('fs');
+const path = require('path');
 
 /**
  * EmailService class to send emails using Nodemailer
  * @class EmailService
- *
  * @requires nodemailer
- * @requires dotenv
  *
- * @Author: Yassin Rahou
+ * @Author Yassin Rahou
  */
 class EmailService {
 
@@ -19,6 +18,13 @@ class EmailService {
         this.transporter = null;
     }
 
+    /**
+     * Initialize the transporter for sending emails. This method should be called before sending any emails
+     * For testing purposes, we are using Ethereal email service. For production, you can use Gmail or any other email service
+     *
+     * @async
+     * @returns {Promise<void>}
+     */
     async init() {
         // Voor test: gebruik Ethereal-service
         this.transporter = nodemailer.createTransport({
@@ -41,13 +47,23 @@ class EmailService {
         // });
     }
 
+    /**
+     * Send a verification email to the user. The email contains a verification code.
+     *
+     * @async
+     * @param email Email address to send the verification email to
+     * @param code Verification code to include in the email
+     * @returns {Promise<any>}
+     */
     async sendVerificationEmail(email, code) {
         if (!this.transporter) {
             throw new Error('Transporter is not initialized. Call init() first.');
         }
 
-        const template = fs.readFileSync(path.join(__dirname, '../email-templates/verification-email.html'), 'utf-8');
+        // Load the email template in the templates folder
+        const template = fs.readFileSync(path.join(__dirname, '../templates/verification-email.html'), 'utf-8');
 
+        // Replace the placeholder with the verification code
         const content = template.replace('{{verificationcode}}', code);
 
         const options = {
