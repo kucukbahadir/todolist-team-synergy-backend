@@ -3,12 +3,15 @@ require('dotenv').config();
 
 const express = require('express');
 const { MongoClient } = require('mongodb');
+const EmailService = require('./services/EmailService');
 
 // Create an instance of Express
 const app = express();
 
 // Middleware to parse JSON requests
 app.use(express.json());
+
+const emailService = new EmailService();
 
 // MongoDB Connection URL and Database Name from environment variables
 const url = process.env.MONGO_DB_URL;
@@ -38,6 +41,26 @@ connectDB();
 // Define a basic route to test the server
 app.get('/', (req, res) => {
   res.send('Hello, World! Express is up and running.');
+});
+
+// Test the verification email service
+app.post('/api/verify', async (req, res) => {
+  try {
+    await emailService.sendVerificationEmail(req.body.email, req.body.code);
+    res.send('Email sent');
+  } catch (error) {
+    res.status(500).send('Error sending email');
+  }
+});
+
+// Test the password reset email service
+app.post('/api/reset', async (req, res) => {
+    try {
+        await emailService.sendPasswordResetEmail(req.body.email, req.body.link);
+        res.send('Email sent');
+    } catch (error) {
+        res.status(500).send('Error sending email');
+    }
 });
 
 // Define routes for other operations
