@@ -12,15 +12,12 @@ app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
 
-// Catch signal events and cleanly close the server
-process.on('SIGTERM', () => {
+const cleanup = () => {
+  console.log("Cleaning up...");
   server.close(() => {
-    console.log('Process terminated');
+    console.log("Server closed");
+    process.exit(0); // Exit the process
   });
-});
+}
 
-process.on('SIGINT', () => {
-  server.close(() => {
-    console.log('Process terminated');
-  });
-});
+process.on('exit', cleanup);

@@ -14,14 +14,16 @@ class EmailService {
     transporter;
 
     constructor() {
-        this.transporter = nodemailer.createTransport({
-            host: 'smtp.ethereal.email',
-            port: 587,
-            secure: false,
-            auth: {
-                user: process.env.EMAIL_TEST,
-                pass: process.env.EMAIL_PASSWORD_TEST
-            }
+        nodemailer.createTestAccount((err, account) => {
+            this.transporter = nodemailer.createTransport({
+                host: account.smtp.host,
+                port: account.smtp.port,
+                secure: account.smtp.secure,
+                auth: {
+                    user: account.user,
+                    pass: account.pass
+                }
+            });
         });
 
         // Voor productie: gebruik Gmail-service
