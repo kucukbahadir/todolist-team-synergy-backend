@@ -4,7 +4,7 @@ require('dotenv').config();
 const express = require('express');
 const {MongoClient, ObjectId} = require('mongodb'); // Import ObjectId for MongoDB
 const EmailService = require('./services/EmailService');
-const Task = require('./taskModel'); // Keep the Task model import
+const Task = require('./models/taskModel'); // Keep the Task model import
 
 // Create an instance of Express
 const app = express();
