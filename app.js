@@ -4,6 +4,8 @@ require('dotenv').config();
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const EmailService = require('./services/EmailService');
+const mongoose = require('mongoose');
+const Task = require('./taskModel'); // Import the Task model
 
 // Create an instance of Express
 const app = express();
@@ -17,10 +19,15 @@ const emailService = new EmailService();
 const url = process.env.MONGO_DB_URL;
 const dbName = process.env.MONGO_DB_NAME;
 
-// MongoDB Client
+// MongoDB Client (existing MongoDB connection)
 const client = new MongoClient(url);
 
-// Connect to MongoDB
+// Connect to MongoDB using Mongoose (for Mongoose-based operations)
+mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('Connected to MongoDB successfully with Mongoose'))
+    .catch((err) => console.error('Error connecting to MongoDB:', err));
+
+// Connect to MongoDB using the native MongoDB driver (keeping existing connection logic intact)
 async function connectDB() {
   try {
     console.log('Connecting to MongoDB server...');
@@ -55,12 +62,12 @@ app.post('/api/verify', async (req, res) => {
 
 // Test the password reset email service
 app.post('/api/reset', async (req, res) => {
-    try {
-        await emailService.sendPasswordResetEmail(req.body.email, req.body.link);
-        res.send('Email sent');
-    } catch (error) {
-        res.status(500).send('Error sending email');
-    }
+  try {
+    await emailService.sendPasswordResetEmail(req.body.email, req.body.link);
+    res.send('Email sent');
+  } catch (error) {
+    res.status(500).send('Error sending email');
+  }
 });
 
 // Define routes for other operations
@@ -74,15 +81,25 @@ app.get('/api/tasks', async (req, res) => {
   }
 });
 
+// Define the "Create Task" operation (POST) using Mongoose
 app.post('/api/tasks', async (req, res) => {
-  const { title, description } = req.body;
+  const { title, description, dueDate, completed, priority, assignedToUser, taskList } = req.body;
+
   try {
-    const db = client.db(dbName);
-    const newTask = { title, description, createdAt: new Date() };
-    const result = await db.collection('tasks').insertOne(newTask);
-    res.status(201).json(result.ops[0]);
+    const newTask = new Task({
+      title,
+      description,
+      dueDate,
+      completed,
+      priority,
+      assignedToUser,
+      taskList
+    });
+
+    const savedTask = await newTask.save(); // Save task using Mongoose
+    res.status(201).json(savedTask);
   } catch (err) {
-    res.status(500).json({ message: 'Error adding task', error: err.message });
+    res.status(500).json({ message: 'Error creating task', error: err.message });
   }
 });
 
