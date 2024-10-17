@@ -108,6 +108,49 @@ app.post('/api/tasks', async (req, res) => {
     }
 });
 
+// Update Task operation (PUT) using MongoClient
+app.put('/api/tasks/:id', async (req, res) => {
+    const { id } = req.params;
+    const { title, description, dueDate, completed, priority, assignedToUser, taskList } = req.body;
+
+    try {
+        // update object with fields to update
+        const updateFields = {
+            ...(title && { title }),  // Only add these fields if they are provided
+            ...(description && { description }),
+            ...(dueDate && { dueDate }),
+            ...(typeof completed === 'boolean' && { completed }), // Completed might be false
+            ...(priority && { priority }),
+            ...(assignedToUser && { assignedToUser: new ObjectId(assignedToUser) }),
+            ...(taskList && { taskList: new ObjectId(taskList) }),
+            updatedAt: new Date() // Always update the 'updatedAt' field
+        };
+
+        // check we have valid update fields
+        if (Object.keys(updateFields).length === 0) {
+            return res.status(400).json({ message: 'No valid fields provided for update' });
+        }
+
+        // Update the task in the database
+        const result = await db.collection('tasks').updateOne(
+            { _id: new ObjectId(id) }, // Filter by the task's _id
+            { $set: updateFields } // Update the fields
+        );
+
+        // Check if the task was found and updated
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ message: 'Task not found' });
+        }
+
+        // Retrieve the updated task to return in the response
+        const updatedTask = await db.collection('tasks').findOne({ _id: new ObjectId(id) });
+
+        res.status(200).json(updatedTask);
+    } catch (err) {
+        res.status(500).json({ message: 'Error updating task', error: err.message });
+    }
+});
+
 app.delete('/api/tasks/:id', async (req, res) => {
     const {id} = req.params;
     try {
