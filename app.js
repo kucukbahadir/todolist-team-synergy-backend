@@ -78,7 +78,7 @@ app.get('/api/tasks', async (req, res) => {
     }
 });
 
-// Define the "Create Task" operation (POST) using MongoClient
+// Create Task operation (POST) using MongoClient
 app.post('/api/tasks', async (req, res) => {
     const { title, description, dueDate, completed, priority, assignedToUser, taskList } = req.body;
 
@@ -95,12 +95,19 @@ app.post('/api/tasks', async (req, res) => {
     };
 
     try {
-        const result = await db.collection('tasks').insertOne(newTask); // Save task using MongoClient
-        res.status(201).json(result.ops[0]); // Return the created task
+        // Insert the new task into the database
+        const result = await db.collection('tasks').insertOne(newTask);
+
+        // Fetch the newly created task using the insertedId
+        const insertedTask = await db.collection('tasks').findOne({ _id: result.insertedId });
+
+        // Return the newly created task
+        res.status(201).json(insertedTask);
     } catch (err) {
         res.status(500).json({ message: 'Error creating task', error: err.message });
     }
 });
+
 app.delete('/api/tasks/:id', async (req, res) => {
     const {id} = req.params;
     try {
@@ -116,5 +123,4 @@ app.delete('/api/tasks/:id', async (req, res) => {
     }
 });
 
-// Export the app object so it can be used in index.js
 module.exports = app;
