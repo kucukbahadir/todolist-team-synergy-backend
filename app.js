@@ -1,10 +1,12 @@
+/* eslint-disable no-undef */
 // Load environment variables from .env file
 require('dotenv').config();
 
 const express = require('express');
 const {MongoClient, ObjectId} = require('mongodb'); // Import ObjectId for MongoDB
 const EmailService = require('./services/EmailService');
-const Task = require('./models/taskModel'); // Keep the Task model import
+//const { error } = require('console');
+//const Task = require('./models/taskModel'); // Keep the Task model import
 
 // Create an instance of Express
 const app = express();
@@ -53,6 +55,7 @@ app.post('/api/verify', async (req, res) => {
         await emailService.sendVerificationEmail(req.body.email, req.body.code);
         res.send('Email sent');
     } catch (error) {
+        console.log(error)
         res.status(500).send('Error sending email');
     }
 });
@@ -63,6 +66,7 @@ app.post('/api/reset', async (req, res) => {
         await emailService.sendPasswordResetEmail(req.body.email, req.body.link);
         res.send('Email sent');
     } catch (error) {
+        console.log(error)
         res.status(500).send('Error sending email');
     }
 });
@@ -74,6 +78,7 @@ app.get('/api/tasks', async (req, res) => {
         const tasks = await db.collection('tasks').find().toArray();
         res.json(tasks);
     } catch (err) {
+        console.log(err)
         res.status(500).json({message: 'Error fetching tasks', error: err.message});
     }
 });
@@ -104,8 +109,17 @@ app.post('/api/tasks', async (req, res) => {
         // Return the newly created task
         res.status(201).json(insertedTask);
     } catch (err) {
+        console.log(err)
         res.status(500).json({ message: 'Error creating task', error: err.message });
     }
+});
+
+app.get('/api/users', (req, res) => {
+    //const tasks = await db.collection('tasks').find().toArray();
+
+    db.collection("users").find().toArray()
+        .then(result => {res.json(result);})
+        .catch( error => {console.log(error);});
 });
 
 app.delete('/api/tasks/:id', async (req, res) => {
@@ -119,6 +133,7 @@ app.delete('/api/tasks/:id', async (req, res) => {
             res.status(404).json({message: 'Task not found'});
         }
     } catch (err) {
+        console.log(err);
         res.status(500).json({message: 'Error deleting task', error: err.message});
     }
 });
