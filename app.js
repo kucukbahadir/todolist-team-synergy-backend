@@ -106,6 +106,31 @@ app.post('/api/tasks', async (req, res) => {
     }
 });
 
+// Read Task operation (get) using MongoClient
+
+app.get('/api/tasks/:id', async (req, res) => {
+    const {id} = req.params;
+
+    // Ensure the id is a valid ObjectId
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).json({message: 'Invalid task ID'});
+    }
+
+    try {
+        const db = client.db(dbName);
+        const task = await db.collection('tasks').findOne({_id: new ObjectId(id)}); // Convert id to ObjectId
+
+        if (!task) {
+            return res.status(404).json({message: 'Task not found'});
+        }
+
+        res.json(task); // Return the task if found
+    } catch (err) {
+        res.status(500).json({message: 'Error fetching task', error: err.message});
+    }
+});
+
+
 // Update Task operation (PUT) using MongoClient
 app.put('/api/tasks/:id', async (req, res) => {
     const {id} = req.params;
@@ -123,7 +148,7 @@ app.put('/api/tasks/:id', async (req, res) => {
             updatedAt: new Date() // Always update the 'updatedAt' field
         };
 
-        // check we have valid update fields
+        // Check we have valid update fields
         if (Object.keys(updateFields).length === 0) {
             return res.status(400).json({message: 'No valid fields provided for update'});
         }
@@ -148,7 +173,7 @@ app.put('/api/tasks/:id', async (req, res) => {
     }
 });
 
-// delete task operation (delete) using MongoClient
+// Delete Task operation (delete) using MongoClient
 app.delete('/api/tasks/:id', async (req, res) => {
     const {id} = req.params;
 
