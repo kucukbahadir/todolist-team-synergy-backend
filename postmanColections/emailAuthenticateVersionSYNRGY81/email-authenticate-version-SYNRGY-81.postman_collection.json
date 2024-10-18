@@ -1,0 +1,39 @@
+{
+	"info": {
+		"_postman_id": "80b0073c-5c60-4a27-bcbc-79551deb70b3",
+		"name": "email-authenticate-version-SYNRGY-81",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39029144"
+	},
+	"item": [
+		{
+			"name": "http://localhost:5000/api/verify",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"teamsynergy.2425.coderminds@gmail.com\",\r\n    \"code\": 262626\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/verify",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"verify"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
