@@ -2,11 +2,11 @@ const express = require('express');
 const router = express.Router();
 const {ObjectId} = require('mongodb'); // Import ObjectId for MongoDB
 
-// This function will fetch the database connection from app.js
 let db;
 
-async function connectDB(client, dbName) {
-    db = client.db(dbName);
+// This function will fetch the database connection from app.js
+function connectDB(database) {
+    db = database;
 }
 
 // Get all tasks
