@@ -85,8 +85,7 @@ app.get('/api/tasks', async (req, res) => {
 
 // Create Task operation (POST) using MongoClient
 app.post('/api/tasks', async (req, res) => {
-    const { title, description, dueDate, completed, priority, assignedToUser, taskList } = req.body;
-
+    const {title, description, dueDate, completed, priority, assignedToUser, taskList} = req.body;
     const newTask = {
         title,
         description,
@@ -98,18 +97,16 @@ app.post('/api/tasks', async (req, res) => {
         createdAt: new Date(),
         updatedAt: new Date()
     };
-
     try {
         // Insert the new task into the database
         const result = await db.collection('tasks').insertOne(newTask);
 
         // Fetch the newly created task using the insertedId
-        const insertedTask = await db.collection('tasks').findOne({ _id: result.insertedId });
+        const insertedTask = await db.collection('tasks').findOne({_id: result.insertedId});
 
         // Return the newly created task
         res.status(201).json(insertedTask);
     } catch (err) {
-        console.log(err)
         res.status(500).json({ message: 'Error creating task', error: err.message });
     }
 });
@@ -122,11 +119,83 @@ app.get('/api/users', (req, res) => {
         .catch( error => {console.log(error);});
 });
 
-app.delete('/api/tasks/:id', async (req, res) => {
+// Read Task operation (get) using MongoClient
+app.get('/api/tasks/:id', async (req, res) => {
     const {id} = req.params;
+
+    // Ensure the id is a valid ObjectId
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).json({message: 'Invalid task ID'});
+    }
+
     try {
         const db = client.db(dbName);
-        const result = await db.collection('tasks').deleteOne({_id: new MongoClient.ObjectID(id)});
+        const task = await db.collection('tasks').findOne({_id: new ObjectId(id)}); // Convert id to ObjectId
+
+        if (!task) {
+            return res.status(404).json({message: 'Task not found'});
+        }
+
+        res.json(task); // Return the task if found
+    } catch (err) {
+        res.status(500).json({message: 'Error fetching task', error: err.message});
+    }
+});
+
+
+// Update Task operation (PUT) using MongoClient
+app.put('/api/tasks/:id', async (req, res) => {
+    const {id} = req.params;
+    const {title, description, dueDate, completed, priority, assignedToUser, taskList} = req.body;
+    try {
+        // update object with fields to update
+        const updateFields = {
+            ...(title && {title}),  // Only add these fields if they are provided
+            ...(description && {description}),
+            ...(dueDate && {dueDate}),
+            ...(typeof completed === 'boolean' && {completed}), // Completed might be false
+            ...(priority && {priority}),
+            ...(assignedToUser && {assignedToUser: new ObjectId(assignedToUser)}),
+            ...(taskList && {taskList: new ObjectId(taskList)}),
+            updatedAt: new Date() // Always update the 'updatedAt' field
+        };
+
+        // Check we have valid update fields
+        if (Object.keys(updateFields).length === 0) {
+            return res.status(400).json({message: 'No valid fields provided for update'});
+        }
+
+        // Update the task in the database
+        const result = await db.collection('tasks').updateOne(
+            {_id: new ObjectId(id)}, // Filter by the task's _id
+            {$set: updateFields} // Update the fields
+        );
+
+        // Check if the task was found and updated
+        if (result.matchedCount === 0) {
+            return res.status(404).json({message: 'Task not found'});
+        }
+
+        // Retrieve the updated task to return in the response
+        const updatedTask = await db.collection('tasks').findOne({_id: new ObjectId(id)});
+
+        res.status(200).json(updatedTask);
+    } catch (err) {
+        res.status(500).json({message: 'Error updating task', error: err.message});
+    }
+});
+
+// Delete Task operation (delete) using MongoClient
+app.delete('/api/tasks/:id', async (req, res) => {
+    const {id} = req.params;
+
+    // Ensure the id is a valid ObjectId
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).json({message: 'Invalid task ID'});
+    }
+    try {
+        const db = client.db(dbName);
+        const result = await db.collection('tasks').deleteOne({_id: new ObjectId(id)}); // Convert id to ObjectId
         if (result.deletedCount === 1) {
             res.json({message: 'Task deleted successfully'});
         } else {
