@@ -5,11 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="85f1692f-f0e8-4607-9d93-89fbf5c1b5ed" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/routes/routeAuthenticate.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/routeTask.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/routeTaskList.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/routes/routeUser.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/routeTask.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/routeTask.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,6 +58,12 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\xampp\htdocs\todolist-team-synergy-backend" />
+      <recent name="C:\xampp\htdocs\todolist-team-synergy-backend\models" />
+    </key>
+  </component>
   <component name="RunManager" selected="npm.dev">
     <configuration name="dev" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/package.json" />
