@@ -11,14 +11,16 @@ const url = process.env.MONGO_DB_URL;
 const dbName = process.env.MONGO_DB_NAME;
 const client = new MongoClient(url);
 
+// test if connection to database
 async function connectDB() {
     try {
         await client.connect();
+        console.log('Successfully connected to MongoDB');
         const db = client.db(dbName);
         return db;
     } catch (err) {
-        console.error('Error connecting to MongoDB:', err);
-        process.exit(1);
+        console.error('Error connecting to MongoDB:', err.message);
+        process.exit(1);  // Exit if database connection fails
     }
 }
 
@@ -26,17 +28,14 @@ async function connectDB() {
 const routeAuthenticate = require('./routes/routeAuthenticate');
 const { router: routeTask, connectDB: connectTaskDB } = require('./routes/routeTask');
 
-// Connect to the database and use in task routes
+// Connect to the database and set up routes
 connectDB().then((database) => {
-    connectTaskDB(database); // Pass the connected database
+    connectTaskDB(database); // Pass the connected database to task routes
 
-    // Routes
-    app.use('/api', routeAuthenticate);    // For authentication
+    // Define routes
+    app.use('/api', routeAuthenticate);    // Authentication routes
     app.use('/api/tasks', routeTask);      // Task-related routes
-
-    // Start the server
-    const port = process.env.PORT || 3000;
-    app.listen(port, () => {
-        console.log(`Server running on port ${port}`);
-    });
 });
+
+// Export the `app` instance for use in `index.js`
+module.exports = app;
