@@ -25,8 +25,10 @@ async function connectDB() {
 }
 
 // Route imports
-const routeAuthenticate = require('./routes/routeAuthenticate');
-const { router: routeTask, connectDB: connectTaskDB } = require('./routes/routeTask');
+const routeAuthenticate = require('./routes/authenticateRoute');
+const { router: taskRoute, connectDB: connectTaskDB } = require('./routes/taskRoute');
+// const taskListRoute = require('./routes/taskListRoute');
+// const userRoute = require('./routes/userRoute');
 
 // Connect to the database and set up routes
 connectDB().then((database) => {
@@ -34,7 +36,7 @@ connectDB().then((database) => {
 
     // Define routes
     app.use('/api', routeAuthenticate);    // Authentication routes
-    app.use('/api/tasks', routeTask);      // Task-related routes
+    app.use('/api/tasks', taskRoute);      // Task-related routes
 });
 
 // Export the `app` instance for use in `index.js`
