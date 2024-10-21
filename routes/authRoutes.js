@@ -23,13 +23,13 @@ router.post('/verify-code', async (req, res) => {
         }
 
         if (code.toString() === user.verificationCode) {
-            const token = JWToken.generateToken(user);
+            const token = JWToken.generateToken({ id: user._id, email: user.email });
 
             // Clear the verification code
             await db.collection('users').updateOne({ email }, { $unset: { verificationCode: '' } });
 
             // Set the token in the response header
-            res.set('Authorization', `Bearer ${token}`);
+            res.setHeader('Authorization', `Bearer ${token}`);
 
             res.send('Logged in successfully');
         } else {
