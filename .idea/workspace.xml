@@ -5,8 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="85f1692f-f0e8-4607-9d93-89fbf5c1b5ed" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/tests/postman/SYNRGY-47/before-testing.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/taskRoute.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/taskRoute.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -125,7 +125,7 @@
       <workItem from="1729357427294" duration="1379000" />
       <workItem from="1729360689615" duration="2435000" />
       <workItem from="1729412992157" duration="8466000" />
-      <workItem from="1729602956360" duration="2135000" />
+      <workItem from="1729602956360" duration="5775000" />
     </task>
     <servers />
   </component>
