@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const app = express();
+const JWTFilter = require('./middleware/JWTFilter');
 
 // Middleware to parse JSON requests
 app.use(express.json());
@@ -34,6 +35,10 @@ const { router: taskRoute, connectDB: connectTaskDB } = require('./routes/taskRo
 connectDB().then((database) => {
     connectTaskDB(database); // Pass the connected database to task routes
     connectAuthDB(database); // Pass the connected database to auth routes
+
+
+    // All routes starting with /api will require a valid JWT
+    app.use('/api', JWTFilter);
 
     // Define routes
     app.use('/auth', authRoutes);    // Authentication routes

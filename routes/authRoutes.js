@@ -3,6 +3,7 @@ const router = express.Router();
 const EmailService = require('../services/EmailService');
 const emailService = new EmailService();
 const User = require('../models/userModel');
+const JWToken = require('../utils/JWToken');
 
 let db;
 
@@ -22,9 +23,17 @@ router.post('/verify-code', async (req, res) => {
         }
 
         if (code.toString() === user.verificationCode) {
-            res.send('Code is correct');
+            const token = JWToken.generateToken({ id: user._id, email: user.email });
+
+            // Clear the verification code
+            await db.collection('users').updateOne({ email }, { $unset: { verificationCode: '' } });
+
+            // Set the token in the response header
+            res.setHeader('Authorization', `Bearer ${token}`);
+
+            res.send('Logged in successfully');
         } else {
-            res.status(401).send('Code is incorrect');
+            res.status(401).send('Could not authenticate');
         }
     } catch (error) {
         res.status(500).send('Error verifying code');
