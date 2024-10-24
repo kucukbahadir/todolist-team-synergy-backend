@@ -43,7 +43,8 @@ router.get('/:id', (req, res) => {
 });
 
 // Update task list and task to link them together
-router.patch("/:id", (req, res) => {
+// Add a task to a list
+router.patch("/:id/add", (req, res) => {
     const listID = req.params;
     let listOID;
     const taskID = req.body;
@@ -59,7 +60,7 @@ router.patch("/:id", (req, res) => {
     listOID = new ObjectId(listID);
     taskOID = new ObjectId(taskID);
 
-    // Update the task
+    // Update the task to add the list
     db.collection("tasks").findOneAndUpdate(
             { _id: taskOID },
             { $set: {taskList: listOID}},
@@ -69,16 +70,78 @@ router.patch("/:id", (req, res) => {
             return res.status(400).json({ message: "Error updating Task"});
         });
 
-    // Update the task list
+    // Update the list to add the task
     db.collection("task_lists").findOneAndUpdate(
             { _id: taskOID },
-            { $push: {tasks: taskList + taskOID}},  // Does not check for duplicates
+            { $push: {tasks: taskOID}},  // Does not check for duplicates
             { returnOriginal: false})
         .catch(error => {
             console.log(error);
             return res.status(400).json({ message: "Error updating List"});
         });
 
-})
+});
+
+// Remove a task from a list
+router.patch("/:id/remove", (req, res) => {
+    const listID = req.params;
+    let listOID;
+    const taskID = req.body;
+    let taskOID;
+
+    // Ensure the id is a valid ObjectId
+    if (!ObjectId.isValid(listID)) {
+        return res.status(400).json({message: 'Invalid list ID'});
+    } else if (!ObjectId.isValid(taskID)) {
+        return res.status(400).json({message: 'Invalid task ID'});
+    }
+
+    listOID = new ObjectId(listID);
+    taskOID = new ObjectId(taskID);
+
+    // Update the task to remove the list
+    db.collection("tasks").findOneAndUpdate(
+            { _id: taskOID },
+            { $set: {taskList: null}},
+            { returnOriginal: false})
+        .catch(error => {console.log(error)}
+    );
+
+    // Update the list to remove the task
+    db.collection("task_lists").findOneAndUpdate(
+            { _id: listOID },
+            { $pull: {taskList: taskOID}},
+            { returnOriginal: false}
+        .catch(error => {console.log(error)})
+    );
+});
+
+router.delete("/:id/delete", (req, res) => {
+    const listID = req.params;
+    let listOID;
+
+    if (!ObjectId.isValid(listID)) {
+        return res.status(400).json({message: 'Invalid list ID'});
+    } 
+    listOID = new ObjectId(listID);
+
+    // Remove task list form tasks
+    db.collection("tasks").find({taskList : listOID}).toArray()
+        .then(result => {
+            result.forEach(element => {
+                try {
+                    db.collection("tasks").findOneAndUpdate(
+                        { _id: new ObjectId(element._id) },
+                        { $set: {taskList: null}},
+                        { returnOriginal: false})
+                } catch (error) {
+                    console.log("Task not found: '\n'" + error)
+                }
+            })
+        })
+        .catch(error => {console.log(error)});
+
+    db.collection("task_lists").deleteOne(listOID);
+});
 
 module.exports = {router, connectDB}
