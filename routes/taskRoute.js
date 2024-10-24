@@ -131,4 +131,34 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+// Assign a user to a task (PATCH)
+router.patch('/:id/assign', async (req, res) => {
+    const { id } = req.params; // Get the task ID from the URL
+    const { userId } = req.body; // Get the user ID from the request body
+
+    // Ensure the id is a valid ObjectId
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ message: 'Invalid task ID' });
+    }
+
+    try {
+        // Update the task to assign the user
+        const updatedTask = await db.collection('tasks').findOneAndUpdate(
+            { _id: new ObjectId(id) }, // Filter by the task's _id
+            { $set: { assignedToUser: new ObjectId(userId) } }, // Update assigned user
+            { returnOriginal: false } // Return the updated document
+        );
+
+        // Check if the task was found and updated
+        if (!updatedTask.value) {
+            return res.status(404).json({ message: 'Task found 1' });
+        }
+
+        // Return the updated task
+        res.status(200).json(updatedTask.value);
+    } catch (error) {
+        res.status(500).json({ message: 'Error assigning user to task', error: error.message });
+    }
+});
+
 module.exports = {router, connectDB};
