@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 // Load environment variables from .env file
 require('dotenv').config();
 const express = require('express');
@@ -28,11 +29,13 @@ async function connectDB() {
 // Route imports
 const { router: authRoutes, connectDB: connectAuthDB} = require('./routes/authRoutes');
 const { router: taskRoute, connectDB: connectTaskDB } = require('./routes/taskRoute');
+const { router: listRoute, connectDB: connectListDB } = require('./routes/taskListRoute');
 // const taskListRoute = require('./routes/taskListRoute');
 // const userRoute = require('./routes/userRoute');
 
 // Connect to the database and set up routes
 connectDB().then((database) => {
+    connectListDB(database); // Pass the connected database to list routes
     connectTaskDB(database); // Pass the connected database to task routes
     connectAuthDB(database); // Pass the connected database to auth routes
 
@@ -41,8 +44,9 @@ connectDB().then((database) => {
     app.use('/api', JWTFilter);
 
     // Define routes
-    app.use('/auth', authRoutes);    // Authentication routes
+    app.use('/auth', authRoutes);           // Authentication routes
     app.use('/api/tasks', taskRoute);      // Task-related routes
+    app.use('/api/lists', listRoute);
 });
 
 // Export the `app` instance for use in `index.js`

@@ -12,7 +12,7 @@ function JWTFilter(req, res, next) {
     const token = req.header('Authorization')?.split(' ')[1];
 
     if (!token) {
-        return res.status(403).json({ message: 'No token provided' });
+        return res.status(403).json({ message: 'No token provided', invalidToken: token });
     }
 
     try {
