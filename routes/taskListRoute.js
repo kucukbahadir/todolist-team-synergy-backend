@@ -12,7 +12,8 @@ function connectDB(database) {
 }
 
 // Create a new task list
-router.post("/", (req, res) => {
+/// TODO: Doesn't check for duplicate titles
+router.post("/", async (req, res) => {
     //const _id = new ObjectId()
     const {title, owner, tasks, sharedWith} = req.body;
 
@@ -23,22 +24,24 @@ router.post("/", (req, res) => {
         sharedWith
     }
 
-    db.collection("task_lists").insertOne(newList)
+    const tempList = await db.collection("task_lists").insertOne(newList)
         .catch(error => {console.log(error)})
+
+    console.log(tempList)
+
+    return res.status(200).json("all good")
 });
 
 // Gets the task list and returns the array of task objects assosiated with the task list
 router.get('/:id', async (req, res) => {
     const listID = req.params;
-    let tasks = []
-    let temp;
 
     // Ensure the id is a valid ObjectId
     if (!ObjectId.isValid(listID)) {
         return res.status(400).json({message: 'Invalid list ID'});
     }
 
-    db.collection("task_lists").findOne({_id : new ObjectId(listID)})
+    const list = await db.collection("task_lists").findOne({_id : new ObjectId(listID)})
         // This only returns pending Promises
         /*.then(result => {
             result.tasks.forEach(element => {
@@ -58,21 +61,22 @@ router.get('/:id', async (req, res) => {
             console.log(tasks)
 
             return res.status(200).json(tasks)
-        })*/
+        })
        .then(result => {
             temp = result;
             console.log(temp)
             return res.status(200).json(temp)
-       })
+       })*/
         .catch(error => {
             console.log(error);
             return res.status(400).json({message: error});
         })
+
+    console.log(list);
+    return res.status(200).json(list)
 });
 
 // Add a task to a list
-/// TODO:
-/// 1. Does not check for duplicates
 router.patch("/:id/add", async (req, res) => {
     const listID = req.params;
     let listOID;
@@ -92,20 +96,27 @@ router.patch("/:id/add", async (req, res) => {
     taskOID = new ObjectId(taskID);
 
     // Update the task to add the list
-    const updatedTask = await db.collection("tasks").findOneAndUpdate(
+    const oldTask = await db.collection("tasks").findOneAndUpdate(
             { _id: taskOID },
             { $set: {taskList: listOID}},
-            { returnOriginal: false})
+            { returnOriginal: "before"})
         .catch(error => {
             console.log(error);
             return res.status(400).json({ message: "Error updating Task"});
         });
-    if (updatedTask == null) {
+    if (oldTask == null) {
         return res.status(400).json({ message: "Task not found"});
+    } else if (oldTask.value.taskList != null) {
+        // Remove task from old taskList
+        db.collection("task_lists").findOneAndUpdate(
+            { _id: oldTask.value.taskList },
+            { $pull: {taskList: taskOID}},
+            { returnOriginal: false}
+        .catch(error => {console.log(error)}));
     }
     
-    console.log("Task");
-    console.log(updatedTask);
+    //console.log("Task");
+    //console.log(oldTask);
 
     // Update the list to add the task
     const updatedList = await db.collection("task_lists").findOneAndUpdate(
@@ -123,14 +134,14 @@ router.patch("/:id/add", async (req, res) => {
     console.log("List:");
     console.log(updatedList);
 
-    return res.status(200).json(taskID + " has been added");
+    return res.status(200).json(taskID + " has been added / updated");
 });
 
 // Remove a task from a list
 router.patch("/:id/remove", (req, res) => {
     const listID = req.params;
     let listOID;
-    const taskID = req.body;
+    const { taskID } = req.body;
     let taskOID;
 
     // Ensure the id is a valid ObjectId
