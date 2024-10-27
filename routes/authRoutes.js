@@ -66,6 +66,13 @@ router.post('/request-code', async (req, res) => {
 router.post('/register', async (req, res) => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
 
+    // Check if the user already exists
+    const user = await db.collection('users').findOne({ email: req.body.email });
+
+    if (user) {
+        return res.status(409).send('User already exists');
+    }
+
     // Store the code in the database
     try {
         await db.collection('users').insertOne({ email: req.body.email, verificationCode: code.toString() });
