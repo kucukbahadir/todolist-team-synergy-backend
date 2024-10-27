@@ -1,0 +1,1 @@
+When importing the JSON file into Postman, please note that the variables will not be automatically imported. You will need to manually input the variables. I’ve created an environment for the variables please make sure to import it as well. You can find the environment file in the Slack channel.
