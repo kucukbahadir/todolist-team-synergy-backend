@@ -52,7 +52,7 @@ router.post('/request-code', async (req, res) => {
 
     try {
         await emailService.sendVerificationEmail(req.body.email, code);
-        res.send('Email sent');
+        res.status(200).send('Code sent successfully');
     } catch (error) {
         res.status(500).send('Error sending email');
     }

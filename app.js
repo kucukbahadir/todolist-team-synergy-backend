@@ -3,10 +3,19 @@ require('dotenv').config();
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const app = express();
+const cors = require('cors');
 const JWTFilter = require('./middleware/JWTFilter');
 
 // Middleware to parse JSON requests
 app.use(express.json());
+
+const corsOptions = {
+    origin: 'http://localhost:3000',  // Allow only this origin
+    credentials: true,                 // Allow credentials (cookies, headers)
+};
+
+// Use CORS middleware with specified options
+app.use(cors(corsOptions));
 
 const url = process.env.MONGO_DB_URL;
 const dbName = process.env.MONGO_DB_NAME;
