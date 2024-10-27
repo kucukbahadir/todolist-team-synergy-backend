@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const EmailService = require('../services/EmailService');
 const emailService = new EmailService();
-const User = require('../models/userModel');
 const JWToken = require('../utils/JWToken');
 
 let db;
@@ -23,15 +22,19 @@ router.post('/verify-code', async (req, res) => {
         }
 
         if (code.toString() === user.verificationCode) {
-            const token = JWToken.generateToken({ id: user._id, email: user.email });
+
+            const token = JWToken.generateToken(user);
 
             // Clear the verification code
-            await db.collection('users').updateOne({ email }, { $unset: { verificationCode: '' } });
+            await db.collection('users').updateOne({ email }, { $set: { verificationCode: '' } });
+
+            // Retrieve the updated user document
+            const updatedUser = await db.collection('users').findOne({ email });
 
             // Set the token in the response header
             res.setHeader('Authorization', `Bearer ${token}`);
 
-            res.send('Logged in successfully');
+            res.status(200).send(updatedUser);
         } else {
             res.status(401).send('Could not authenticate');
         }

@@ -11,7 +11,8 @@ app.use(express.json());
 
 const corsOptions = {
     origin: 'http://localhost:3000',  // Allow only this origin
-    credentials: true,                 // Allow credentials (cookies, headers)
+    credentials: true,
+    exposedHeaders: ['Authorization']
 };
 
 // Use CORS middleware with specified options
