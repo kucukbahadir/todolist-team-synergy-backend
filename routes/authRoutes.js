@@ -3,6 +3,7 @@ const router = express.Router();
 const EmailService = require('../services/EmailService');
 const emailService = new EmailService();
 const JWToken = require('../utils/JWToken');
+const User = require('../models/userModel');
 
 let db;
 
@@ -51,6 +52,25 @@ router.post('/request-code', async (req, res) => {
 
     if (result.modifiedCount === 0) {
         return res.status(404).send('User not found');
+    }
+
+    try {
+        await emailService.sendVerificationEmail(req.body.email, code);
+        res.status(200).send('Code sent successfully');
+    } catch (error) {
+        res.status(500).send('Error sending email');
+    }
+
+});
+
+router.post('/register', async (req, res) => {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Store the code in the database
+    try {
+        await db.collection('users').insertOne({ email: req.body.email, verificationCode: code.toString() });
+    } catch (error) {
+        return res.status(500).send('Error creating user');
     }
 
     try {
