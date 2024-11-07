@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const EmailService = require('../services/EmailService');
 const emailService = new EmailService();
-const User = require('../models/userModel');
 const JWToken = require('../utils/JWToken');
+const User = require('../models/userModel');
 
 let db;
 
@@ -23,15 +23,19 @@ router.post('/verify-code', async (req, res) => {
         }
 
         if (code.toString() === user.verificationCode) {
-            const token = JWToken.generateToken({ id: user._id, email: user.email });
+
+            const token = JWToken.generateToken(user);
 
             // Clear the verification code
-            await db.collection('users').updateOne({ email }, { $unset: { verificationCode: '' } });
+            await db.collection('users').updateOne({ email }, { $set: { verificationCode: '' } });
+
+            // Retrieve the updated user document
+            const updatedUser = await db.collection('users').findOne({ email });
 
             // Set the token in the response header
             res.setHeader('Authorization', `Bearer ${token}`);
 
-            res.send('Logged in successfully');
+            res.status(200).send(updatedUser);
         } else {
             res.status(401).send('Could not authenticate');
         }
@@ -52,7 +56,33 @@ router.post('/request-code', async (req, res) => {
 
     try {
         await emailService.sendVerificationEmail(req.body.email, code);
-        res.send('Email sent');
+        res.status(200).send('Code sent successfully');
+    } catch (error) {
+        res.status(500).send('Error sending email');
+    }
+
+});
+
+router.post('/register', async (req, res) => {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Check if the user already exists
+    const user = await db.collection('users').findOne({ email: req.body.email });
+
+    if (user) {
+        return res.status(409).send('User already exists');
+    }
+
+    // Store the code in the database
+    try {
+        await db.collection('users').insertOne({ email: req.body.email, verificationCode: code.toString() });
+    } catch (error) {
+        return res.status(500).send('Error creating user');
+    }
+
+    try {
+        await emailService.sendVerificationEmail(req.body.email, code);
+        res.status(200).send('Code sent successfully');
     } catch (error) {
         res.status(500).send('Error sending email');
     }
