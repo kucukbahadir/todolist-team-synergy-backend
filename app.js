@@ -38,6 +38,8 @@ async function connectDB() {
 // Route imports
 const { router: authRoutes, connectDB: connectAuthDB} = require('./routes/authRoutes');
 const { router: taskRoute, connectDB: connectTaskDB } = require('./routes/taskRoute');
+const { router: notificationRoutes, connectDB: connectNotificationDB } = require('./routes/notificationRoutes');
+
 // const taskListRoute = require('./routes/taskListRoute');
 // const userRoute = require('./routes/userRoute');
 
@@ -45,6 +47,7 @@ const { router: taskRoute, connectDB: connectTaskDB } = require('./routes/taskRo
 connectDB().then((database) => {
     connectTaskDB(database); // Pass the connected database to task routes
     connectAuthDB(database); // Pass the connected database to auth routes
+    connectNotificationDB(database); // Pass the connected database to notification routes
 
 
     // All routes starting with /api will require a valid JWT
@@ -53,6 +56,7 @@ connectDB().then((database) => {
     // Define routes
     app.use('/auth', authRoutes);    // Authentication routes
     app.use('/api/tasks', taskRoute);      // Task-related routes
+    app.use('/notifications', notificationRoutes);  // Notification routes
 });
 
 // Export the `app` instance for use in `index.js`

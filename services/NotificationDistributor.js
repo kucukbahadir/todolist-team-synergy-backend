@@ -2,7 +2,7 @@ const WebSocket = require('ws');
 
 class NotificationDistributor {
     constructor(server) {
-        this.wss = new WebSocket.Server({ server });
+        this.wss = new WebSocket.Server({ server, path: '/notification' });
         this.sessionsMap = {};
 
         this.wss.on('connection', (ws) => this.handleConnection(ws));
