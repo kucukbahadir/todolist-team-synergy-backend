@@ -8,7 +8,7 @@ function connectDB(database) {
     db = database;
 }
 
-router.get('/', async (res) => {
+router.get('/', async (req, res) => {
     try {
         const users = await db.collection('users').find().toArray();
         res.json(users);
@@ -28,10 +28,10 @@ router.post('/', async (req, res) => {
     };
     try {
         // Insert the new User into the database
-        const result = await db.collection('email').insertOne(newUser);
+        const result = await db.collection('users').insertOne(newUser);
 
         // Fetch the newly created User using the insertedId
-        const insertedUser = await db.collection('email').findOne({_id: result.insertedId});
+        const insertedUser = await db.collection('users').findOne({_id: result.insertedId});
 
         // Return the newly created User
         res.status(201).json(insertedUser);
@@ -79,7 +79,7 @@ router.put('/:id', async (req, res) => {
         }
 
         // Update the task in the database
-        const result = await db.collection('email').updateOne(
+        const result = await db.collection('users').updateOne(
             {_id: new ObjectId(id)}, // Filter by the task's _id
             {$set: updateFields} // Update the fields
         );
@@ -90,7 +90,7 @@ router.put('/:id', async (req, res) => {
         }
 
         // Retrieve the updated User to return in the response
-        const updatedTask = await db.collection('email').findOne({_id: new ObjectId(id)});
+        const updatedTask = await db.collection('users').findOne({_id: new ObjectId(id)});
 
         res.status(200).json(updatedTask);
     } catch (err) {
@@ -107,7 +107,7 @@ router.delete('/:id', async (req, res) => {
         return res.status(400).json({message: 'Invalid User ID'});
     }
     try {
-        const result = await db.collection('email').deleteOne({_id: new ObjectId(id)}); // Convert id to ObjectId
+        const result = await db.collection('users').deleteOne({_id: new ObjectId(id)}); // Convert id to ObjectId
         if (result.deletedCount === 1) {
             res.json({message: 'User deleted successfully'});
         } else {
