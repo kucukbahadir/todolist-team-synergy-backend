@@ -8,6 +8,16 @@ require('dotenv').config();
 const PORT = process.env.PORT || 5000;
 
 // Start the server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+const cleanup = () => {
+  console.log("Cleaning up...");
+  server.close(() => {
+    console.log("Server closed");
+    process.exit(0); // Exit the process
+  });
+}
+
+process.on('exit', cleanup);
