@@ -56,7 +56,7 @@ connectDB().then((database) => {
     // Define routes
     app.use('/auth', authRoutes);    // Authentication routes
     app.use('/api/tasks', taskRoute);      // Task-related routes
-    app.use('/notifications', notificationRoutes);  // Notification routes
+    app.use('/api/notifications', notificationRoutes);  // Notification routes
 });
 
 // Export the `app` instance for use in `index.js`

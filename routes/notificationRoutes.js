@@ -49,7 +49,6 @@ router.post('/:userId', async (req, res) => {
         _id: new ObjectId(),
         title,
         message,
-        type,
         link,
         createdAt: new Date(),
         read: false
