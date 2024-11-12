@@ -10,7 +10,7 @@ function connectDB(database) {
 
 router.get('/', async (res) => {
     try {
-        const users = await db.collection('user').find().toArray();
+        const users = await db.collection('users').find().toArray();
         res.json(users);
     } catch (err) {
         res.status(500).json({message: 'Error fetching users', error: err.message});
