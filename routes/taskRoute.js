@@ -21,18 +21,20 @@ router.get('/', async (req, res) => {
 
 // Create Task operation (POST)
 router.post('/', async (req, res) => {
-    const {title, description, dueDate, completed, priority, assignedToUser, taskList} = req.body;
+    const {title, description, dueDate, completed, priority, taskList} = req.body;
+    // Automatically assign the task to the authenticated user
     const newTask = {
         title,
         description,
         dueDate,
         completed: completed || false,
         priority: priority || 'Medium',
-        assignedToUser: assignedToUser ? new ObjectId(assignedToUser) : null,
+        assignedToUser: new ObjectId(req.user.id), // Automatically set the creator as the assigned user
         taskList: new ObjectId(taskList), // Convert taskList to ObjectId
         createdAt: new Date(),
         updatedAt: new Date()
     };
+
     try {
         // Insert the new task into the database
         const result = await db.collection('tasks').insertOne(newTask);
