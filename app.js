@@ -28,6 +28,7 @@ async function connectDB() {
 // Route imports
 const { router: authRoutes, connectDB: connectAuthDB} = require('./routes/authRoutes');
 const { router: taskRoute, connectDB: connectTaskDB } = require('./routes/taskRoute');
+const {router: userRoute, connectDB: }
 // const taskListRoute = require('./routes/taskListRoute');
 // const userRoute = require('./routes/userRoute');
 
