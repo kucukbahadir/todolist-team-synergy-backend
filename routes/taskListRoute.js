@@ -199,4 +199,56 @@ router.delete("/:id/delete", (req, res) => {
     db.collection("task_lists").deleteOne(listOID);
 });
 
+// Share a task list with other users
+router.post("/:id/share", async (req, res) => {
+    const listID = req.params.id;
+    const { emails } = req.body; // Array of emails to share the list with
+
+    // Check if the task list ID is valid
+    if (!ObjectId.isValid(listID)) {
+        return res.status(400).json({ message: 'Invalid task list ID' });
+    }
+
+    try {
+        // Fetch the task list
+        const taskList = await db.collection("task_lists").findOne({ _id: new ObjectId(listID) });
+        if (!taskList) {
+            console.log("Task list not found for ID:", listID);
+            return res.status(404).json({ message: 'Task list not found' });
+        }
+        console.log("Task list found:", taskList);
+
+        // Find users by emails
+        const users = await db.collection("users").find({ email: { $in: emails } }).toArray();
+        if (users.length === 0) {
+            console.log("No users found for emails:", emails);
+            return res.status(404).json({ message: 'No users found with provided emails' });
+        }
+        console.log("Users found:", users);
+
+        // Extract user IDs
+        const userIds = users.map(user => user._id);
+        console.log("User IDs to share with:", userIds);
+
+        // Update the `sharedWith` field in the task list
+        const updateListResult = await db.collection("task_lists").updateOne(
+            { _id: new ObjectId(listID) },
+            { $addToSet: { sharedWith: { $each: userIds } } } // Avoid duplicates
+        );
+        console.log("Task list update result:", updateListResult);
+
+        // Update each user's `sharedLists` field
+        const updateUserResult = await db.collection("users").updateMany(
+            { _id: { $in: userIds } },
+            { $addToSet: { sharedLists: new ObjectId(listID) } } // Avoid duplicates
+        );
+        console.log("User update result:", updateUserResult);
+
+        res.status(200).json({ message: 'Task list shared successfully', sharedWith: emails });
+    } catch (error) {
+        console.error("Error details:", error);
+        res.status(500).json({ message: 'An error occurred while sharing the task list' });
+    }
+});
+
 module.exports = {router, connectDB}
