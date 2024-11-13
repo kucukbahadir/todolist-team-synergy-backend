@@ -33,47 +33,32 @@ router.post("/", async (req, res) => {
 });
 
 // Gets the task list and returns the array of task objects assosiated with the task list
-router.get('/:id', async (req, res) => {
-    const listID = req.params;
+router.get('/', async (req, res) => {
+    const ids = req.query.ids;
 
-    // Ensure the id is a valid ObjectId
-    if (!ObjectId.isValid(listID)) {
-        return res.status(400).json({message: 'Invalid list ID'});
+    // Check if 'ids' parameter is provided
+    if (!ids) {
+        return res.status(400).json({ message: 'No list IDs provided' });
     }
 
-    const list = await db.collection("task_lists").findOne({_id : new ObjectId(listID)})
-        // This only returns pending Promises
-        /*.then(result => {
-            result.tasks.forEach(element => {
-                try {
-                    console.log(element)
-                    const task = db.collection("tasks").findOne({id : new ObjectId(element)});
-                    console.log(task)
+    // Split the 'ids' query parameter into an array
+    const listIDs = ids.split(',');
 
-                    tasks.push(task);
-                } catch (error) {
-                    console.log(error);
-                    return res.status(400).json({message: error});
-                }
-                //res.json(tasks);
-            });
+    // Validate all IDs to ensure they are valid MongoDB ObjectIDs
+    const validObjectIds = listIDs.filter(id => ObjectId.isValid(id)).map(id => new ObjectId(id));
 
-            console.log(tasks)
+    if (validObjectIds.length === 0) {
+        return res.status(400).json({ message: 'No valid list IDs provided' });
+    }
 
-            return res.status(200).json(tasks)
-        })
-       .then(result => {
-            temp = result;
-            console.log(temp)
-            return res.status(200).json(temp)
-       })*/
-        .catch(error => {
-            console.log(error);
-            return res.status(400).json({message: error});
-        })
-
-    console.log(list);
-    return res.status(200).json(list)
+    try {
+        // Fetch all lists with the provided IDs
+        const lists = await db.collection("task_lists").find({ _id: { $in: validObjectIds } }).toArray();
+        return res.status(200).json(lists);
+    } catch (error) {
+        console.error("Error fetching lists:", error);
+        return res.status(500).json({ message: 'Error fetching lists' });
+    }
 });
 
 // Add a task to a list
