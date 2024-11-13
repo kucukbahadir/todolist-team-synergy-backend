@@ -7,6 +7,9 @@ require('dotenv').config();
 // Set the port from the environment or default to 5000
 const PORT = process.env.PORT || 5000;
 
+// Ignore errors about unauthorized certificates
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
 // Start the server
 const server = app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
