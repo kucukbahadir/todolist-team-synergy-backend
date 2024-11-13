@@ -169,7 +169,9 @@ router.patch('/:id/assign', async (req, res) => {
             link: `/tasks/${id}`
         }).then(async () => {
             // Distribute the notification to the user
-            await notificationDistributor.notify(`notifications-${userId}`)
+            await notificationDistributor.notify(`notifications-${userId}`);
+
+            await notificationDistributor.notify(`new-task-${userId}`);
         });
 
         // Return the updated task
