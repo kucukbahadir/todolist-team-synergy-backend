@@ -56,7 +56,7 @@ connectDB().then((database) => {
     // Define routes
     app.use('/auth', authRoutes);           // Authentication routes
     app.use('/api/tasks', taskRoute);      // Task-related routes
-    app.use('/api/lists', listRoute);
+    app.use('/lists', listRoute);
 });
 
 // Export the `app` instance for use in `index.js`
