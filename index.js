@@ -12,10 +12,19 @@ const server = app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
 
+const NotificationDistributor = require('./services/NotificationDistributor');
+const notificationDistributor = new NotificationDistributor(server);
+
+// provide the notification distributor to the app
+app.set('notificationDistributor', notificationDistributor);
+
+
+
 const cleanup = () => {
   console.log("Cleaning up...");
   server.close(() => {
     console.log("Server closed");
+    notificationDistributor.wss.close(); // Close the WebSocket server
     process.exit(0); // Exit the process
   });
 }

@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const {ObjectId} = require('mongodb'); // Import ObjectId for MongoDB
+const NotificationRepository = require('../repositories/NotificationRepository');
 
 let db;
+let notificationRepository;
 
 // This function will fetch the database connection from app.js
 function connectDB(database) {
     db = database;
+    notificationRepository = new NotificationRepository(db);
 }
 
 // Get all tasks
@@ -137,6 +140,7 @@ router.delete('/:id', async (req, res) => {
 router.patch('/:id/assign', async (req, res) => {
     const { id } = req.params; // Get the task ID from the URL
     const { userId } = req.body; // Get the user ID from the request body
+    const notificationDistributor = req.app.get('notificationDistributor');
 
     // Ensure the id is a valid ObjectId
     if (!ObjectId.isValid(id)) {
@@ -145,19 +149,33 @@ router.patch('/:id/assign', async (req, res) => {
 
     try {
         // Update the task to assign the user
-        const updatedTask = await db.collection('tasks').findOneAndUpdate(
+        const result = await db.collection('tasks').updateOne(
             { _id: new ObjectId(id) }, // Filter by the task's _id
-            { $set: { assignedToUser: new ObjectId(userId) } }, // Update assigned user
-            { returnOriginal: false } // Return the updated document
+            { $set: { assignedToUser: new ObjectId(userId) } } // Assign the user
         );
 
         // Check if the task was found and updated
-        if (!updatedTask.value) {
-            return res.status(404).json({ message: 'Task found 1' });
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ message: 'Task not found' });
         }
 
+        // Retrieve the updated task to return in the response
+        const updatedTask = await db.collection('tasks').findOne({ _id: new ObjectId(id) });
+
+        // Create a notification for the assigned user
+        await notificationRepository.createNotification(userId, {
+            title: 'Task Assigned',
+            message: `You have been assigned to: ${updatedTask.title}`,
+            link: `/tasks/${id}`
+        }).then(async () => {
+            // Distribute the notification to the user
+            await notificationDistributor.notify(`notifications-${userId}`);
+
+            await notificationDistributor.notify(`new-task-${userId}`);
+        });
+
         // Return the updated task
-        res.status(200).json(updatedTask.value);
+        res.status(200).json();
     } catch (error) {
         res.status(500).json({ message: 'Error assigning user to task', error: error.message });
     }
