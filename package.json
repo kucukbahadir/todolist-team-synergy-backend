@@ -19,7 +19,8 @@
     "mjml": "^4.15.3",
     "mongodb": "^6.9.0",
     "mongoose": "^8.7.1",
-    "nodemailer": "^6.9.15"
+    "nodemailer": "^6.9.15",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "globals": "^15.11.0",
