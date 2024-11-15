@@ -89,7 +89,8 @@ router.patch("/:id/add", async (req, res) => {
             console.log(error);
             return res.status(400).json({ message: "Error updating Task"});
         });
-    if (oldTask == null) {
+    console.log(oldTask);
+    /* if (oldTask == null) {
         return res.status(400).json({ message: "Task not found"});
     } else if (oldTask.value.taskList != null) {
         // Remove task from old taskList
@@ -98,7 +99,7 @@ router.patch("/:id/add", async (req, res) => {
             { $pull: {taskList: taskOID}},
             { returnOriginal: false}
         .catch(error => {console.log(error)}));
-    }
+    } */
     
     //console.log("Task");
     //console.log(oldTask);
