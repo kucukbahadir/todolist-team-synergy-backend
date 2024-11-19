@@ -78,23 +78,22 @@ router.get('/mail/:mail', async (req, res) => {
 
 // TODO: dit werkt niet voro de een of ander reden
 router.patch("/:id/", async (req, res) => {
-    //console.log(req)
-    console.log(req.params.id)
-    const id = req.params.id;
-    //console.log("id", id)
-    console.log(req.body);
-    const {user} = req.body;
-    //const id = user._id;
+    const id = req.params;
+    console.log("ID: ", id);
+    const user = req.body;
+    console.log("User", user);
 
     try {
         console.log(user);
-        //delete user._id;
+        delete user._id;
 
-        const result = await db.collection("users").findOneAndUpdate(
+        let result = await db.collection("users").findOneAndUpdate(
             {_id: new ObjectId(id)},
             { $set: user},
             { returnOriginal: false}
         )
+
+        result = await db.collection("users").findOne(new ObjectId(id))
 
         console.log("Updated User: ", result);
 
