@@ -123,6 +123,22 @@ router.patch("/:id/add", async (req, res) => {
     return res.status(200).json(taskID + " has been added / updated");
 });
 
+router.patch("/:id/update", async (req, res) => {
+    const listID = req.params;
+    const {listUpdate} = req.body
+
+    const temp = await db.collection("task_lists").findOneAndUpdate(
+        { _id: listID },
+        { $set: listUpdate},
+        { returnOriginal: false})
+    .catch(error => {
+        console.log(error);
+        return res.status(400).json({ message: "Error updating Task"});
+    });
+
+    return res.status(200).json(temp)
+});
+
 // Remove a task from a list
 router.patch("/:id/remove", (req, res) => {
     const listID = req.params;

@@ -41,24 +41,71 @@ router.post('/', async (req, res) => {
 });
 
 // Read User operation (GET) get a single User by ID
-router.get('/:id', async (req, res) => {
-    const {id} = req.params;
-
-    // Ensure the id is a valid ObjectId
-    if (!ObjectId.isValid(id)) {
-        return res.status(400).json({message: 'Invalid User ID'});
-    }
-
+router.get('/id/:id', async (req, res) => {
+    const id = req.params.id; // Extract the email from route params
+    console.log("HIT")
     try {
-        const task = await db.collection('email').findOne({_id: new ObjectId(id)}); // Convert id to ObjectId
+        const user = await db.collection('users').findOne({ _id: new ObjectId(id) });
+        console.log(user)
 
-        if (!task) {
-            return res.status(404).json({message: 'User not found'});
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' }); // Handle case where user is not found
         }
 
-        res.json(task); // Return the User if found
-    } catch (err) {
-        res.status(500).json({message: 'Error fetching task', error: err.message});
+        return res.status(200).json(user); // Send user data as JSON response
+    } catch (error) {
+        console.error("Error fetching user:", error); // Log the error for debugging
+        res.status(500).json({ message: 'Internal server error' }); // Send structured error response
+    }
+});
+
+// Read User operation (GET) get a single User by mail
+router.get('/mail/:mail', async (req, res) => {
+    const email = req.params.mail; // Extract the email from route params
+    try {
+        const user = await db.collection('users').findOne({ email: email });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' }); // Handle case where user is not found
+        }
+
+        return res.status(200).json(user); // Send user data as JSON response
+    } catch (error) {
+        console.error("Error fetching user:", error); // Log the error for debugging
+        res.status(500).json({ message: 'Internal server error' }); // Send structured error response
+    }
+});
+
+// TODO: dit werkt niet voro de een of ander reden
+router.patch("/:id/", async (req, res) => {
+    //console.log(req)
+    console.log(req.params.id)
+    const id = req.params.id;
+    //console.log("id", id)
+    console.log(req.body);
+    const {user} = req.body;
+    //const id = user._id;
+
+    try {
+        console.log(user);
+        //delete user._id;
+
+        const result = await db.collection("users").findOneAndUpdate(
+            {_id: new ObjectId(id)},
+            { $set: user},
+            { returnOriginal: false}
+        )
+
+        console.log("Updated User: ", result);
+
+        if (!result.value) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        return res.status(200).json(result);
+    } catch (error) {
+        console.log(error);
+        return res.status(500);
     }
 });
 
