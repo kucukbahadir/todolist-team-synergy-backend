@@ -19,6 +19,7 @@ router.get('/', async (req, res) => {
 
 
 // Create User operation (POST)
+// Isn't this also what happens with authRoutes' "/register"?
 router.post('/', async (req, res) => {
     const {email} = req.body;
     const newUser = {
