@@ -4,6 +4,7 @@ const EmailService = require('../services/EmailService');
 const emailService = new EmailService();
 const JWToken = require('../utils/JWToken');
 const User = require('../models/userModel');
+const {ObjectId} = require("mongodb");
 
 let db;
 
@@ -41,6 +42,40 @@ router.post('/verify-code', async (req, res) => {
         }
     } catch (error) {
         res.status(500).send('Error verifying code');
+    }
+});
+
+router.get('/mail/:mail', async (req, res) => {
+    const email = req.params.mail; // Extract the email from route params
+    try {
+        const user = await db.collection('users').findOne({ email: email });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' }); // Handle case where user is not found
+        }
+
+        return res.status(200).json(user); // Send user data as JSON response
+    } catch (error) {
+        console.error("Error fetching user:", error); // Log the error for debugging
+        res.status(500).json({ message: 'Internal server error' }); // Send structured error response
+    }
+});
+
+router.get('/id/:id', async (req, res) => {
+    const id = req.params.id; // Extract the email from route params
+    console.log("HIT")
+    try {
+        const user = await db.collection('users').findOne({ _id: new ObjectId(id) });
+        console.log(user)
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' }); // Handle case where user is not found
+        }
+
+        return res.status(200).json(user); // Send user data as JSON response
+    } catch (error) {
+        console.error("Error fetching user:", error); // Log the error for debugging
+        res.status(500).json({ message: 'Internal server error' }); // Send structured error response
     }
 });
 
