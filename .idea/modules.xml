@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../todolist-team-synergy/.idea/todolist-team-synergy.iml" filepath="$PROJECT_DIR$/../todolist-team-synergy/.idea/todolist-team-synergy.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/todolist-team-synergy-backend.iml" filepath="$PROJECT_DIR$/.idea/todolist-team-synergy-backend.iml" />
     </modules>
   </component>
