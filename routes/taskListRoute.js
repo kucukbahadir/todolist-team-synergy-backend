@@ -123,9 +123,13 @@ router.patch("/:id/add", async (req, res) => {
     return res.status(200).json(taskID + " has been added / updated");
 });
 
+// TODO: maybe something broke with /api/?
 router.patch("/:id/update", async (req, res) => {
-    const listID = req.params;
-    const {listUpdate} = req.body
+    const {listID} = req.params;
+    const {listUpdate} = req.body;
+
+    console.log("ID:", listID);
+    console.log("List", listUpdate)
 
     const temp = await db.collection("task_lists").findOneAndUpdate(
         { _id: listID },
