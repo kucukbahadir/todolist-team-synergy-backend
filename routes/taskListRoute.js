@@ -14,22 +14,35 @@ function connectDB(database) {
 // Create a new task list
 /// TODO: Doesn't check for duplicate titles
 router.post("/", async (req, res) => {
-    //const _id = new ObjectId()
-    const {title, owner, tasks, sharedWith} = req.body;
+    const { title, owner, tasks, sharedWith } = req.body;
+
+    // Ensure owner and sharedWith are ObjectIds
+    const ownerObjectId = new ObjectId(owner);  // Convert owner ID to ObjectId
+    const sharedWithObjectIds = sharedWith.map(id => new ObjectId(id));  // Convert sharedWith IDs to ObjectIds
 
     const newList = {
         title,
-        owner,
+        owner: ownerObjectId,  // Store owner as ObjectId
         tasks: [],
-        sharedWith
+        sharedWith: sharedWithObjectIds  // Store sharedWith as ObjectId array
+    };
+
+    try {
+        // Insert the new task list into the database
+        const tempList = await db.collection("task_lists").insertOne(newList);
+        
+        // Add the new task list's ID to the user's sharedLists
+        await db.collection("users").updateOne(
+            { _id: ownerObjectId },  // Use ObjectId for user query
+            { $push: { sharedLists: tempList.insertedId } }  // Add task list ID to sharedLists
+        );
+
+        console.log("New Task List Created:", tempList);
+        return res.status(200).json({ message: "Task list created successfully", listId: tempList.insertedId });
+    } catch (error) {
+        console.error('Error creating task list:', error);
+        return res.status(500).json({ message: "Failed to create task list" });
     }
-
-    const tempList = await db.collection("task_lists").insertOne(newList)
-        .catch(error => {console.log(error)})
-
-    console.log(tempList)
-
-    return res.status(200).json("all good")
 });
 
 // Gets the task list and returns the array of task objects assosiated with the task list
