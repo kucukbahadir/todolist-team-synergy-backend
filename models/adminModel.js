@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
   },
   verificationCode: {
     type: String,
-    required: false // Only used temporarily during login
+    required: false 
   },
   tasks: [{ 
     type: mongoose.Schema.Types.ObjectId, 
