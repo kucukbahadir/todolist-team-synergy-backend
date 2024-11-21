@@ -61,7 +61,7 @@ connectDB().then((database) => {
     app.use('/auth', authRoutes);           // Authentication routes
     app.use('/api/tasks', taskRoute);      // Task-related routes
     app.use('/admin', adminRoute);
-    app.use('/api/lists', listRoute);
+    app.use('/lists', listRoute);
     app.use('/api/notifications', notificationRoutes);  // Notification routes
 });
 

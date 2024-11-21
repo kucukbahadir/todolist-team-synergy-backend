@@ -136,6 +136,30 @@ router.patch("/:id/add", async (req, res) => {
     return res.status(200).json(taskID + " has been added / updated");
 });
 
+// Used to add a user to sharedWith
+router.patch("/:id/update", async (req, res) => {
+    const listID = req.params;
+    const userID = req.body;
+
+    //console.log("ID:", listID);
+    console.log("List", userID)
+
+    let result = await db.collection("task_lists").findOneAndUpdate(
+        { _id: new ObjectId(listID.id) },
+        { $push: {sharedWith: new ObjectId(userID.userID)}},
+        { returnOriginal: false})
+    .catch(error => {
+        console.log(error);
+        return res.status(400).json({ message: "Error updating Task"});
+    });
+
+    result = await db.collection("task_lists").findOne(new ObjectId(listID.id))
+
+    console.log(result)
+
+    return res.status(200).json(result)
+});
+
 // Remove a task from a list
 router.patch("/:id/remove", (req, res) => {
     const listID = req.params;
