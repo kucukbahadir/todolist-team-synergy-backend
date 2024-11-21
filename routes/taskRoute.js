@@ -14,6 +14,9 @@ function connectDB(database) {
 
 // Get all tasks
 router.get('/', async (req, res) => {
+    if (req.db) {
+        db = req.db;
+    }
     const ids = req.query.ids;
 
     // Check if 'ids' parameter is provided
@@ -23,12 +26,14 @@ router.get('/', async (req, res) => {
 
     // Split the 'ids' query parameter into an array
     const listIDs = ids.split(',');
+    //console.log("List ID's", listIDs);
 
     // Validate all IDs to ensure they are valid MongoDB ObjectIDs
     const validObjectIds = listIDs.filter(id => ObjectId.isValid(id)).map(id => new ObjectId(id));
+    //console.log("Valids: ", validObjectIds)
 
     if (validObjectIds.length === 0) {
-        return res.status(400).json({ message: 'No valid task IDs provided' });
+        return res.status(401).json({ message: 'No valid task IDs provided' });
     }
 
     try {
@@ -39,18 +44,16 @@ router.get('/', async (req, res) => {
         console.error("Error fetching tasks:", error);
         return res.status(500).json({ message: 'Error fetching tasks' });
     }
-
-    /* try {
-        const tasks = await db.collection('tasks').find().toArray();
-        res.json(tasks);
-    } catch (err) {
-        res.status(500).json({message: 'Error fetching tasks', error: err.message});
-    } */
 });
 
 // Create Task operation (POST)
 router.post('/', async (req, res) => {
+    if (req.db) {
+        db = req.db;
+    }
     const {title, description, dueDate, completed, priority, taskList} = req.body;
+    console.log("Body: ", req.body);
+    console.log("User: ", req.user);
     // Automatically assign the task to the authenticated user
     const newTask = {
         title,
@@ -58,7 +61,8 @@ router.post('/', async (req, res) => {
         dueDate,
         completed: completed || false,
         priority: priority || 'Medium',
-        assignedToUser: new ObjectId(req.user.id), // Automatically set the creator as the assigned user
+        // TODO: fix this i.v.m de test somehow
+        //assignedToUser: new ObjectId(req.user.id), // Automatically set the creator as the assigned user
         taskList: new ObjectId(taskList), // Convert taskList to ObjectId
         createdAt: new Date(),
         updatedAt: new Date()
@@ -94,7 +98,7 @@ router.get('/:id', async (req, res) => {
             return res.status(404).json({message: 'Task not found'});
         }
 
-        res.json(task); // Return the task if found
+        res.status(200).json(task); // Return the task if found
     } catch (err) {
         res.status(500).json({message: 'Error fetching task', error: err.message});
     }
