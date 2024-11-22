@@ -11,6 +11,7 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 const { MongoClient, ObjectId } = require('mongodb');
 
 let app, db, mongod, client;
+const mockUser = new ObjectId().toString();
 
 beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
@@ -27,6 +28,7 @@ beforeAll(async () => {
     app.use(bodyParser.json());
     app.use((req, res, next) => {
         req.db = db; // Inject database into the request object
+        req.user = { id: mockUser }; // Mock user with a random ObjectId
         next();
     });
     app.use('/tasks', rout.router);
@@ -91,28 +93,19 @@ describe("GET /tasks", () => {
 
 describe('POST /tasks', () => {
     it('should create a new task and return it', async () => {
-        /* const mockTask = {
-            title: 'Test Task',
-            description: 'This is a test task',
-            dueDate: '2024-12-01T00:00:00Z',
-            completed: false,
-            priority: 'High',
-            taskList: new ObjectId().toString()
-        }; */
-
         const mockTask = {
             title: 'Test Task',
             description: 'This is a test task',
             dueDate: new Date('2024-12-01T00:00:00Z'),
             completed: false,
             priority: 'High',
+            //assignedToUser: new ObjectId().toString(),
             taskList: new ObjectId().toString()
         };
 
         const res = await request(app)
             .post('/tasks')
             .send(mockTask);
-            //.send(JSON.stringify(mockTask));
 
         expect(res.status).toBe(201);
         expect(res.body).toBeDefined();
@@ -123,6 +116,7 @@ describe('POST /tasks', () => {
             dueDate: mockTask.dueDate.toISOString(),
             completed: mockTask.completed,
             priority: mockTask.priority,
+            assignedToUser: mockUser,
             taskList: mockTask.taskList
         });
         //expect(res.body.assignedToUser).toBeDefined();
@@ -276,3 +270,41 @@ describe("DELETE /tasks/:id", () => {
     })
 });
 
+// Dunno if this is testable due to the notification repository
+describe("GET /tasks/:id/assign", () => {
+    beforeEach(async () => {
+        // Insert test data into the in-memory database
+        const tasksCollection = db.collection('tasks');
+        await tasksCollection.insertMany([
+            { _id: new ObjectId(), name: 'Task 1', assigned: new ObjectId() },
+            { _id: new ObjectId(), name: 'Task 2', assigned: new ObjectId() },
+        ]);
+    });
+
+    afterEach(async () => {
+        // Clear db
+        await db.collection("tasks").deleteMany({});
+    });
+
+    /* it("", async () => {
+        // Get random task
+        const tasks = await db.collection('tasks').find({}).toArray();
+        //console.log("Tasks: ", tasks);
+        const index = Math.floor(Math.random() * tasks.length)
+        const id = tasks[index]._id;
+        //console.log("ID: ", id)
+
+        const url = `/tasks/${id}/assign`
+        //console.log("URL: ", url);
+
+        const res = await request(app)
+            .patch(url);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toMatchObject({
+            _id: tasks[index]._id.toString(),
+            name: tasks[index].name,
+            assigned: (!tasks[index].assigned)
+        });
+    }); */
+});

@@ -48,9 +48,9 @@ router.get('/', async (req, res) => {
 
 // Create Task operation (POST)
 router.post('/', async (req, res) => {
-    if (req.db) {
+    /* if (req.db) {
         db = req.db;
-    }
+    } */
     const {title, description, dueDate, completed, priority, taskList} = req.body;
     console.log("Body: ", req.body);
     console.log("User: ", req.user);
@@ -62,7 +62,7 @@ router.post('/', async (req, res) => {
         completed: completed || false,
         priority: priority || 'Medium',
         // TODO: fix this i.v.m de test somehow
-        //assignedToUser: new ObjectId(req.user.id), // Automatically set the creator as the assigned user
+        assignedToUser: new ObjectId(req.user.id), // Automatically set the creator as the assigned user
         taskList: new ObjectId(taskList), // Convert taskList to ObjectId
         createdAt: new Date(),
         updatedAt: new Date()
