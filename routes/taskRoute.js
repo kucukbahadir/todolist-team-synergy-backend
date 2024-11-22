@@ -157,7 +157,7 @@ router.delete('/:id', async (req, res) => {
     try {
         const result = await db.collection('tasks').deleteOne({_id: new ObjectId(id)}); // Convert id to ObjectId
         if (result.deletedCount === 1) {
-            res.json({message: 'Task deleted successfully'});
+            res.status(200).json({message: 'Task deleted successfully'});
         } else {
             res.status(404).json({message: 'Task not found'});
         }

@@ -236,7 +236,43 @@ describe("DELETE /tasks/:id", () => {
     });
 
     it("should delete the tasks", async () => {
+        // Get random task
+        const tasks = await db.collection('tasks').find({}).toArray();
+        //console.log("Tasks: ", tasks);
+        const index = Math.floor(Math.random() * tasks.length)
+        const id = tasks[index]._id;
+        //console.log("ID: ", id)
 
+        const url = `/tasks/${id}`
+        //console.log("URL: ", url);
+
+        const res = await request(app)
+            .delete(url);
+
+        expect(res.status).toBe(200);
+
+        const _tasks = await db.collection('tasks').find({}).toArray();
+        expect(_tasks.length).toBe(tasks.length - 1)
     });
+
+    it("should return 404 for _id not in db", async () => {
+        const url = `/tasks/${new ObjectId()}`
+        //console.log("URL: ", url);
+
+        const res = await request(app)
+            .delete(url);
+
+        expect(res.status).toBe(404);
+    });
+
+    it("should return 400 for invalid ObjectId", async () => {
+        const url = `/tasks/invalidID`
+        //console.log("URL: ", url);
+
+        const res = await request(app)
+            .delete(url);
+
+        expect(res.status).toBe(400);
+    })
 });
 
