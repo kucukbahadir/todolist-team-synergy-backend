@@ -37,7 +37,7 @@ beforeAll(async () => {
 afterAll(async () => {
     await client.close();
     await mongod.stop();
-})
+});
 
 describe("GET /tasks", () => {
     beforeEach(async () => {
